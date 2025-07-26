@@ -50,5 +50,5 @@ python main.py
 ## Pyinstaller command
 
 ```
-pyinstaller --name="Spring Change Detection" --onefile --windowed --icon="resources/icons/app_icon.ico" --add-data "resources;resources" --add-data "gui;gui" --add-data "utils;utils" --add-data "data_processing.py;." --hidden-import=gui --hidden-import=utils --hidden-import=PySide6 --hidden-import=pandas --hidden-import=openpyxl --hidden-import=xlrd --hidden-import=matplotlib.backends.backend_qt5agg main.py
+pyinstaller --name="Spring Change Detection" --onefile --windowed --icon="resources/icons/app_icon.ico" --add-data "video;video" --add-data "resources;resources" --add-data "gui;gui" --add-data "utils;utils" --add-data "data_processing.py;." --hidden-import=gui --hidden-import=utils --hidden-import=PySide6 --hidden-import=pandas --hidden-import=openpyxl --hidden-import=xlrd --hidden-import=matplotlib.backends.backend_qt5agg main.py
 ```
