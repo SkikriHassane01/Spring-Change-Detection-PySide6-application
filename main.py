@@ -6,10 +6,20 @@ from gui.main_window import MainWindow
 from utils.app_state import AppState
 from gui.styling import AppStyles
 
+def setup_resource_paths():
+    """Setup resource paths for PyInstaller compatibility"""
+    if getattr(sys, 'frozen', False):
+        # Running in PyInstaller bundle
+        os.environ['RESOURCE_PATH'] = sys._MEIPASS
+    else:
+        # Running in development
+        os.environ['RESOURCE_PATH'] = os.path.dirname(os.path.abspath(__file__))
+        
 def main():
     """
     Main entry point for the Spring Change Detection Application.
     """
+    setup_resource_paths()
     # 1) Bootstrap QApplication
     app = QApplication(sys.argv)
 

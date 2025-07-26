@@ -34,6 +34,24 @@ class VideoPlayerWidget(QFrame):
         
         # Initialize media player
         self.setup_media_player()
+    
+    def get_resource_path(self, relative_path):
+        """Return absolute path to resource, works for dev and for PyInstaller."""
+        # Try to get base path from environment variable first (set by main.py)
+        base_path = os.environ.get('RESOURCE_PATH')
+        
+        if not base_path:
+            # Fallback to direct detection
+            if getattr(sys, 'frozen', False):
+                # Running in PyInstaller bundle
+                base_path = sys._MEIPASS
+            else:
+                # Running in your IDE / as a normal script
+                base_path = os.path.dirname(os.path.abspath(__file__))
+        
+        full_path = os.path.join(base_path, relative_path)
+        print(f"Resource path for '{relative_path}': {full_path}")
+        return full_path
         
     def create_banner_section(self, layout):
         """Create simple centered Guide header"""
@@ -80,7 +98,7 @@ class VideoPlayerWidget(QFrame):
         """)
         
         # Try to load banner image for overlay
-        banner_path = "resources/images/guide_banner.png"
+        banner_path = self.get_resource_path("resources/images/guide_banner.png")
         if os.path.exists(banner_path):
             pixmap = QPixmap(banner_path)
             if not pixmap.isNull():
@@ -194,12 +212,16 @@ class VideoPlayerWidget(QFrame):
         self.media_player.playbackStateChanged.connect(self.on_playback_state_changed)
         
         # Load video file
-        video_path = os.path.abspath("video/intro.mp4")
+        video_path = self.get_resource_path("video/intro.mp4")
+        print(f"Looking for video at: {video_path}")
+        print(f"Video file exists: {os.path.exists(video_path)}")
+        
         if os.path.exists(video_path):
             self.media_player.setSource(QUrl.fromLocalFile(video_path))
+            print("Video loaded successfully")
         else:
             # Show error message in video widget
-            self.show_video_error("Video file not found: video/intro.mp4")
+            self.show_video_error(f"Video file not found: {video_path}")
     
     def show_video_error(self, message):
         """Display error message when video cannot be loaded"""
