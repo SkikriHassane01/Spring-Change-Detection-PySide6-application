@@ -70,6 +70,41 @@ class ResultsWidget(QWidget):
         if self.state.results_df is not None:
             self.update_results()
     
+    def create_moteur_list_tab(self):
+        """Create a tab showing the list of unique motors (Moteur column)."""
+        tab = QWidget()
+        layout = QVBoxLayout(tab)
+        
+        moteur_list_label = QLabel("🔧 Unique Motors List")
+        moteur_list_label.setFont(QFont("Arial", 14, QFont.Bold))
+        moteur_list_label.setStyleSheet("color: white; margin-bottom: 10px;")
+        layout.addWidget(moteur_list_label)
+        
+        if self.state.new_df is None or "Moteur" not in self.state.new_df.columns:
+            no_data_label = QLabel("No 'Moteur' column found in the uploaded data.")
+            no_data_label.setStyleSheet("color: #FFAA00; font-style: italic;")
+            layout.addWidget(no_data_label)
+            return tab
+
+        # Get sorted unique motors
+        moteurs = sorted(self.state.new_df["Moteur"].dropna().unique())
+
+        # Display as a scrollable label list
+        scroll_area = QScrollArea()
+        scroll_area.setWidgetResizable(True)
+        scroll_content = QWidget()
+        scroll_layout = QVBoxLayout(scroll_content)
+
+        for moteur in moteurs:
+            moteur_label = QLabel(f"• {moteur}")
+            moteur_label.setStyleSheet("color: #CCCCCC; font-size: 13px; padding: 2px;")
+            scroll_layout.addWidget(moteur_label)
+
+        scroll_area.setWidget(scroll_content)
+        layout.addWidget(scroll_area)
+
+        return tab
+
     def init_ui(self):
         """Initialize the user interface."""
         # Apply dark mode style
@@ -218,6 +253,10 @@ class ResultsWidget(QWidget):
             sheet_tab = self.create_sheet_tab(last_sheet, self.state.excel_sheets_data[last_sheet])
             self.tabs.addTab(sheet_tab, "Assiette Théorique")
     
+        # Tab 5: Moteur List (if Moteur column is available)
+        if self.state.new_df is not None and "Moteur" in self.state.new_df.columns:
+            moteur_tab = self.create_moteur_list_tab()
+            self.tabs.addTab(moteur_tab, "Moteur List")
     def load_excel_data(self):
         """Load Excel sheet data in background."""
         if not self.state.new_file_path or not os.path.exists(self.state.new_file_path):
