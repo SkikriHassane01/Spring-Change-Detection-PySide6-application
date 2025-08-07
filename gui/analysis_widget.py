@@ -102,7 +102,15 @@ class AnalysisWidget(QWidget):
         self.change_type_layout = QVBoxLayout(self.change_type_container)
         scroll_layout.addWidget(self.change_type_container)
         
+        # Add Moteur list section
+        self.moteur_label = QLabel("🔧 Unique Motors List")
+        self.moteur_label.setStyleSheet(AppStyles.SECTION_HEADER_STYLE)
+        scroll_layout.addWidget(self.moteur_label)
         
+        self.moteur_container = QFrame()
+        self.moteur_container.setMinimumHeight(200)
+        self.moteur_layout = QVBoxLayout(self.moteur_container)
+        scroll_layout.addWidget(self.moteur_container)
         
         # Set the scroll content
         scroll_area.setWidget(scroll_content)
@@ -187,6 +195,9 @@ class AnalysisWidget(QWidget):
 
         # Change type chart
         self.add_change_type_chart(result_df)
+        
+        # Add Moteur list display
+        self.add_moteur_list()
     
     def add_metrics(self, result_df):
         """Add metrics cards to the grid layout."""
@@ -268,6 +279,62 @@ class AnalysisWidget(QWidget):
             label = QLabel("No data available for change type analysis.")
             self.change_type_layout.addWidget(label)
 
+    def add_moteur_list(self):
+        """Add a list display of unique motor types."""
+        # Clear previous content
+        for i in reversed(range(self.moteur_layout.count())):
+            self.moteur_layout.itemAt(i).widget().setParent(None)
+            
+        moteurs = []
+        
+        # Check new file
+        if self.state.new_df is not None and "Moteur" in self.state.new_df.columns:
+            moteurs.extend(self.state.new_df["Moteur"].dropna().unique())
+            
+        # Check old file 
+        if self.state.old_df is not None and "Moteur" in self.state.old_df.columns:
+            moteurs.extend(self.state.old_df["Moteur"].dropna().unique())
+            
+        # Get sorted unique motors (remove duplicates)
+        unique_moteurs = sorted(set(moteurs))
+        
+        if not unique_moteurs:
+            label = QLabel("No motor data available in uploaded files")
+            label.setStyleSheet("color: #CCCCCC; font-style: italic;")
+            self.moteur_layout.addWidget(label)
+            return
+            
+        # Display count
+        count_label = QLabel(f"Found {len(unique_moteurs)} unique motor types")
+        count_label.setStyleSheet("color: #CCCCCC; font-style: italic; margin-bottom: 10px;")
+        self.moteur_layout.addWidget(count_label)
+        
+        # Create scrollable area
+        scroll = QScrollArea()
+        scroll.setWidgetResizable(True)
+        scroll.setStyleSheet(f"background-color: {AppStyles.DARK_CARD_BG}; border: 1px solid {AppStyles.DARK_BORDER};")
+        
+        moteur_widget = QWidget()
+        grid_layout = QGridLayout(moteur_widget)
+        grid_layout.setHorizontalSpacing(20)
+        grid_layout.setVerticalSpacing(5)
+        
+        # Calculate number of columns based on typical length of motor names
+        num_columns = 3  # Adjust based on typical width
+        
+        # Add motors to grid
+        for i, moteur in enumerate(unique_moteurs):
+            if moteur and str(moteur).strip():  # Skip empty values
+                row = i // num_columns
+                col = i % num_columns
+                
+                moteur_label = QLabel(f"• {moteur}")
+                moteur_label.setStyleSheet("color: #CCCCCC; font-size: 13px; padding: 2px;")
+                grid_layout.addWidget(moteur_label, row, col)
+                
+        scroll.setWidget(moteur_widget)
+        self.moteur_layout.addWidget(scroll)
+
     def clear_ui_elements(self):
         """Clear all UI elements containing results."""
         # Clear metrics
@@ -281,7 +348,11 @@ class AnalysisWidget(QWidget):
             if item.widget():
                 item.widget().setParent(None)
         
-
+        # Clear moteur list
+        for i in reversed(range(self.moteur_layout.count())):
+            item = self.moteur_layout.itemAt(i)
+            if item.widget():
+                item.widget().setParent(None)
     
     def view_results(self):
         """Navigate to the results page."""
